@@ -1,172 +1,212 @@
-// ВРЕМОНТЕ | Упрощённая рабочая версия
-class App {
+// ВРЕМОНТЕ | Основное приложение с Telegram интеграцией
+class VremonteApp {
     constructor() {
         this.user = null;
+        this.isDemo = false;
         this.init();
     }
     
     init() {
-        console.log('🚀 Времонте запущен!');
-        this.showMainScreen();
+        console.log('🚀 Времонте запускается...');
+        
+        // Проверяем режим (демо или реальный)
+        const urlParams = new URLSearchParams(window.location.search);
+        this.isDemo = urlParams.get('demo') === 'true';
+        
+        // Проверяем авторизацию
+        this.checkAuth();
+        
+        // Инициализируем Telegram Web App если доступно
+        this.initTelegram();
+        
+        // Показываем интерфейс
+        this.render();
     }
     
-    showMainScreen() {
-        document.getElementById('app').innerHTML = `
+    checkAuth() {
+        // Проверяем сохранённую сессию
+        const savedUser = localStorage.getItem('vremonte_user');
+        if (savedUser) {
+            this.user = JSON.parse(savedUser);
+        }
+    }
+    
+    initTelegram() {
+        // Инициализация Telegram Web App
+        if (window.Telegram && window.Telegram.WebApp) {
+            const tg = window.Telegram.WebApp;
+            
+            // Настраиваем Telegram Web App
+            tg.expand();
+            tg.enableClosingConfirmation();
+            tg.setHeaderColor('#1a2980');
+            tg.setBackgroundColor('#1a2980');
+            
+            // Получаем данные пользователя
+            const user = tg.initDataUnsafe.user;
+            if (user) {
+                this.user = {
+                    id: user.id,
+                    firstName: user.first_name,
+                    lastName: user.last_name,
+                    username: user.username,
+                    photoUrl: user.photo_url,
+                    isTelegram: true
+                };
+                
+                localStorage.setItem('vremonte_user', JSON.stringify(this.user));
+                console.log('✅ Пользователь Telegram авторизован:', this.user);
+            }
+            
+            // Показываем кнопку "Закрыть" в Telegram Web App
+            if (tg.platform !== 'unknown') {
+                tg.BackButton.show();
+                tg.BackButton.onClick(() => {
+                    tg.close();
+                });
+            }
+        }
+    }
+    
+    render() {
+        const app = document.getElementById('app') || document.body;
+        
+        if (!this.user && !this.isDemo) {
+            // Показываем экран авторизации
+            app.innerHTML = this.getAuthScreen();
+        } else {
+            // Показываем главный экран
+            app.innerHTML = this.getMainScreen();
+        }
+    }
+    
+    getAuthScreen() {
+        return `
             <div class="container">
-                <div class="logo">
-                    <div class="logo-icon">🏔️</div>
-                    <h1>Времонте</h1>
-                    <p>Безопасные услуги в Якутии</p>
+                <div class="logo">🏔️</div>
+                <h1>ВРЕМОНТЕ</h1>
+                <p>Безопасные услуги в Якутии</p>
+                
+                <button class="btn btn-primary" onclick="app.loginWithTelegram()">
+                    <span style="font-size: 1.4em">📱</span><br>
+                    ВОЙТИ ЧЕРЕЗ TELEGRAM
+                </button>
+                
+                <div class="divider">или</div>
+                
+                <button class="btn btn-secondary" onclick="app.startDemo()">
+                    <span style="font-size: 1.4em">🎮</span><br>
+                    ДЕМО-РЕЖИМ
+                    <small>(для тестирования)</small>
+                </button>
+                
+                <div class="features">
+                    <p>✅ Все мастера проверены по паспорту</p>
+                    <p>📍 Только ваш район (10 км радиус)</p>
+                    <p>📞 Контакт виден только после выбора</p>
+                    <p>⭐ Бесплатно для всех</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    getMainScreen() {
+        const userName = this.user ? 
+            (this.user.firstName || this.user.username || 'Пользователь') : 
+            'Демо-пользователь';
+        
+        return `
+            <div class="container">
+                <div class="user-header">
+                    <div class="avatar">${userName.charAt(0).toUpperCase()}</div>
+                    <div class="user-info">
+                        <h2>${userName}</h2>
+                        <p>${this.isDemo ? '👑 Демо-режим' : '✅ Авторизован'}</p>
+                    </div>
                 </div>
                 
-                <div class="card">
+                <div class="main-actions">
+                    <h3>Что вам нужно?</h3>
+                    
                     <button class="btn btn-primary" onclick="app.showClientMode()">
-                        <span style="font-size: 1.3em">🎯</span><br>
-                        СОЗДАТЬ ЗАКАЗ<br>
-                        <small>Нужен мастер</small>
+                        <span style="font-size: 1.4em">🎯</span><br>
+                        СОЗДАТЬ ЗАКАЗ
+                        <small>Нужен проверенный мастер</small>
                     </button>
                     
                     <div class="divider">или</div>
                     
                     <button class="btn btn-secondary" onclick="app.showMasterMode()">
-                        <span style="font-size: 1.3em">👷</span><br>
-                        СТАТЬ МАСТЕРОМ<br>
-                        <small>Ищу работу</small>
+                        <span style="font-size: 1.4em">👷</span><br>
+                        СТАТЬ МАСТЕРОМ
+                        <small>Ищу работу в радиусе 10 км</small>
                     </button>
                 </div>
                 
-                <div class="card">
-                    <h3>Демо-режим</h3>
-                    <p>🔒 Все мастера проверены</p>
-                    <p>📍 Только ваш район (10 км)</p>
-                    <p>⭐ Бесплатно для всех</p>
-                    <p>📞 Прямой контакт после выбора</p>
-                    
-                    <button class="btn" onclick="app.demoLogin()" 
-                            style="background: #4CAF50; color: white; margin-top: 15px;">
-                        🔓 ДЕМО-ВХОД (тестовый режим)
-                    </button>
+                <div class="stats">
+                    <h4>📊 Статистика платформы</h4>
+                    <p>✅ 1,245 проверенных пользователей</p>
+                    <p>📍 Работает в Якутске, Нюрбе, Мирном</p>
+                    <p>⭐ 0 случаев мошенничества</p>
                 </div>
+                
+                <button class="btn btn-outline" onclick="app.logout()">
+                    🔄 Сменить аккаунт
+                </button>
             </div>
         `;
+    }
+    
+    loginWithTelegram() {
+        // Ссылка для открытия в Telegram Web App
+        const botUsername = 'vremonte_yakutia_bot';
+        const webAppUrl = encodeURIComponent('https://vremonte26.github.io/vremonte-yakutia/');
+        
+        // Открываем в Telegram если приложение из Telegram
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.openTelegramLink(`https://t.me/${botUsername}/vremonte`);
+        } else {
+            // Открываем в браузере ссылку на бота
+            window.open(`https://t.me/${botUsername}?start=webapp`, '_blank');
+            
+            alert(`📱 Откройте эту ссылку в Telegram:\n\nhttps://t.me/${botUsername}\n\nЗатем нажмите кнопку "Start" или "Запустить"`);
+        }
+    }
+    
+    startDemo() {
+        this.isDemo = true;
+        this.user = {
+            id: 'demo_001',
+            firstName: 'Демо',
+            lastName: 'Пользователь',
+            username: 'demo_user'
+        };
+        
+        localStorage.setItem('vremonte_user', JSON.stringify(this.user));
+        localStorage.setItem('vremonte_demo', 'true');
+        
+        this.render();
+        
+        alert('🎮 ДЕМО-РЕЖИМ АКТИВИРОВАН\n\nТеперь вы можете тестировать:\n• Создание заказов\n• Ленту заказов\n• Систему откликов\n• Интерфейс клиента/мастера\n\n📝 Все данные сохраняются локально');
     }
     
     showClientMode() {
-        document.getElementById('app').innerHTML = `
-            <div class="container">
-                <div style="text-align: left;">
-                    <button class="btn" onclick="app.showMainScreen()" 
-                            style="background: transparent; color: #1a2980; padding: 10px;">
-                        ← Назад
-                    </button>
-                </div>
-                
-                <div class="logo">
-                    <div class="logo-icon">🎯</div>
-                    <h1>Режим клиента</h1>
-                </div>
-                
-                <div class="card">
-                    <h3>Создать заказ</h3>
-                    
-                    <div class="input-group">
-                        <input type="text" placeholder="Что нужно сделать?" id="orderTitle">
-                    </div>
-                    
-                    <div class="input-group">
-                        <input type="text" placeholder="Ваш адрес (для мастера)" id="orderAddress">
-                    </div>
-                    
-                    <button class="btn btn-primary" onclick="app.createOrder()">
-                        📝 ОПУБЛИКОВАТЬ ЗАКАЗ
-                    </button>
-                </div>
-                
-                <div class="card">
-                    <h3>Как это работает?</h3>
-                    <p>1. Вы создаёте заказ</p>
-                    <p>2. Мастера в радиусе 10 км видят его</p>
-                    <p>3. Первые 5 откликнувшихся попадают к вам</p>
-                    <p>4. Вы выбираете одного, видите его телефон</p>
-                    <p>5. Договариваетесь и работа выполняется</p>
-                </div>
-            </div>
-        `;
+        alert('🎯 РЕЖИМ КЛИЕНТА\n\nЗдесь будет:\n• Создание заказа с фото\n• Указание адреса\n• Выбор из 5 ближайших мастеров\n• Чат с выбранным мастером\n\n⏳ Раздел в разработке');
     }
     
     showMasterMode() {
-        const orders = [
-            { id: 1, title: 'Установить смеситель', distance: '0.8 км', time: '15 мин', responses: 0 },
-            { id: 2, title: 'Покрасить стену', distance: '1.2 км', time: '2 часа', responses: 3 },
-            { id: 3, title: 'Починить розетку', distance: '2.5 км', time: '1 час', responses: 5 }
-        ];
-        
-        document.getElementById('app').innerHTML = `
-            <div class="container">
-                <div style="text-align: left;">
-                    <button class="btn" onclick="app.showMainScreen()" 
-                            style="background: transparent; color: #1a2980; padding: 10px;">
-                        ← Назад
-                    </button>
-                </div>
-                
-                <div class="logo">
-                    <div class="logo-icon">👷</div>
-                    <h1>Режим мастера</h1>
-                    <p>Лента заказов в радиусе 10 км</p>
-                </div>
-                
-                ${orders.map(order => `
-                    <div class="card" style="margin: 15px 0;">
-                        <h4>${order.title}</h4>
-                        <p>📍 ${order.distance} • ⏰ ${order.time}</p>
-                        <p>👥 ${order.responses}/5 откликов</p>
-                        
-                        <button class="btn ${order.responses >= 5 ? 'btn-outline' : 'btn-primary'}" 
-                                ${order.responses >= 5 ? 'disabled' : ''}
-                                onclick="app.respondToOrder(${order.id})"
-                                style="margin-top: 10px;">
-                            ${order.responses >= 5 ? '⛔ НЕДОСТУПНО' : '✅ ОТКЛИКНУТЬСЯ'}
-                        </button>
-                    </div>
-                `).join('')}
-                
-                <div class="card">
-                    <h3>Правила для мастеров</h3>
-                    <p>✅ Откликаться можно на 5 заказов одновременно</p>
-                    <p>📍 Видны только заказы в радиусе 10 км</p>
-                    <p>📞 Телефон клиента виден только после выбора</p>
-                    <p>⭐ Рейтинг растёт после выполненных работ</p>
-                </div>
-            </div>
-        `;
+        alert('👷 РЕЖИМ МАСТЕРА\n\nЗдесь будет:\n• Лента заказов в радиусе 10 км\n• Карта с булавками заказов\n• Система откликов (макс 5)\n• Ваша статистика и рейтинг\n\n⏳ Раздел в разработке');
     }
     
-    demoLogin() {
-        alert('✅ Демо-вход выполнен!\n\nТеперь вы можете:\n🎯 Создавать заказы (режим клиента)\n👷 Откликаться на заказы (режим мастера)\n\nЭто тестовая версия. В рабочей будет:\n- Telegram-авторизация\n- Настоящие заказы\n- Геолокация\n- Уведомления');
-        
-        this.user = { name: 'Демо Пользователь', role: 'client' };
-        this.showMainScreen();
-    }
-    
-    createOrder() {
-        const title = document.getElementById('orderTitle').value;
-        const address = document.getElementById('orderAddress').value;
-        
-        if (!title || !address) {
-            alert('Заполните все поля');
-            return;
-        }
-        
-        alert(`✅ Заказ создан!\n\n"${title}"\n\nАдрес: ${address}\n\nТеперь мастера в радиусе 10 км увидят ваш заказ. Первые 5 откликнувшихся появятся у вас в списке.`);
-        
-        this.showMainScreen();
-    }
-    
-    respondToOrder(orderId) {
-        alert(`✅ Вы откликнулись на заказ #${orderId}\n\nКлиент увидит вас в списке из 5 мастеров. Если он выберет вас — увидите его телефон и адрес.\n\nСтарайтесь откликаться быстро — только первые 5 мастеров попадают к клиенту!`);
+    logout() {
+        localStorage.removeItem('vremonte_user');
+        localStorage.removeItem('vremonte_demo');
+        this.user = null;
+        this.isDemo = false;
+        this.render();
     }
 }
 
-// Создаём глобальный экземпляр
-const app = new App();
+// Инициализация приложения
+const app = new VremonteApp();
+window.app = app; // Делаем глобально доступным
