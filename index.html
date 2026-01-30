@@ -2,75 +2,137 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🚀 Времонте | Якутия</title>
-    
-    <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a2980">
-    
-    <!-- iOS -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="assets/icon-192.png">
-    
-    <!-- Styles -->
+    <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="css/style.css">
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* БАЗОВЫЕ СТИЛИ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a2980 0%, #26d0ce 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .container {
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        .logo {
+            font-size: 4em;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        h1 {
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 20px;
+            margin: 15px 0;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: white;
+            color: #1a2980;
+        }
+        .btn-secondary {
+            background: #ff6b35;
+            color: white;
+        }
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .btn:active {
+            transform: translateY(-1px);
+        }
+        .features {
+            margin-top: 40px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        .features p {
+            margin: 8px 0;
+            font-size: 1em;
+        }
+    </style>
 </head>
 <body>
-    <div id="app">
-        <!-- Приложение загружается сюда через JavaScript -->
-        <div class="loading-screen">
-            <div class="logo">🏔️</div>
-            <h1>Времонте</h1>
-            <p>Загрузка безопасного сервиса...</p>
+    <div class="container">
+        <div class="logo">🏔️</div>
+        <h1>ВРЕМОНТЕ</h1>
+        <p>Безопасный сервис услуг<br>для Якутии</p>
+        
+        <button class="btn btn-primary" onclick="loginWithTelegram()">
+            <span style="font-size: 1.4em">📱</span><br>
+            ВОЙТИ ЧЕРЕЗ TELEGRAM
+        </button>
+        
+        <button class="btn btn-secondary" onclick="showDemoMode()">
+            <span style="font-size: 1.4em">🎯</span><br>
+            ДЕМО-РЕЖИМ (тестирование)
+        </button>
+        
+        <div class="features">
+            <p>✅ Все мастера проверены (паспорт)</p>
+            <p>📍 Только ваш район (10 км радиус)</p>
+            <p>📞 Контакт после выбора (безопасно)</p>
+            <p>⭐ Бесплатно для клиентов и мастеров</p>
+            <p>🚀 Работает в Якутске, Нюрбе, Мирном</p>
         </div>
     </div>
 
-    <!-- JavaScript -->
-    <script src="js/app.js"></script>
     <script>
-        // Автоматический запуск при загрузке
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Времонте запускается...');
-            
-            // Если app.js не загрузился, покажем базовый интерфейс
-            setTimeout(function() {
-                if (!window.app) {
-                    document.getElementById('app').innerHTML = `
-                        <div class="container">
-                            <div class="logo">
-                                <div class="logo-icon">🏔️</div>
-                                <h1>Времонте</h1>
-                                <p>Безопасные услуги в Якутии</p>
-                            </div>
-                            
-                            <div class="card">
-                                <button class="btn btn-primary" onclick="showDemo()">
-                                    <span style="font-size: 1.3em">🎯</span><br>
-                                    СОЗДАТЬ ЗАКАЗ<br>
-                                    <small>Нужен мастер</small>
-                                </button>
-                                
-                                <div class="divider">или</div>
-                                
-                                <button class="btn btn-secondary" onclick="showDemo()">
-                                    <span style="font-size: 1.3em">👷</span><br>
-                                    СТАТЬ МАСТЕРОМ<br>
-                                    <small>Ищу работу</small>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                }
-            }, 2000);
-        });
+        // Telegram Login Widget
+        function loginWithTelegram() {
+            alert('🔐 Telegram-авторизация будет работать после настройки бота\n\nВаш токен: 8495635478:AAHHHmgzaExuFLxxK4bwFLPQNoNi7ZoZNAE\n\nСейчас используйте демо-режим для тестирования интерфейса.');
+        }
         
-        function showDemo() {
-            alert('Это демо-версия. Полная версия с:\n\n✅ Telegram-авторизацией\n✅ Лентой заказов\n✅ Системой откликов\n✅ Геолокацией\n\nбудет доступна после настройки.');
+        // Demo Mode
+        function showDemoMode() {
+            alert('🎮 ДЕМО-РЕЖИМ АКТИВИРОВАН\n\nТеперь вы можете:\n• Создавать тестовые заказы\n• Просматривать ленту заказов\n• Тестировать интерфейс клиента/мастера\n• Проверять систему откликов\n\n📊 Все данные сохраняются локально');
+            
+            // Переход в демо-приложение
+            window.location.href = 'app.html?demo=true';
+        }
+        
+        // PWA Installation
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js');
+            });
+        }
+        
+        // Проверка PWA режима
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('📱 Приложение запущено как PWA');
         }
     </script>
 </body>
