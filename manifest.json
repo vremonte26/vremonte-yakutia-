@@ -1,23 +1,35 @@
 {
-  "name": "Времонте | Якутия",
+  "name": "ВРЕМОНТЕ | Якутия",
   "short_name": "Времонте",
-  "description": "Безопасный сервис бытовых услуг с проверкой",
-  "start_url": "/Вермонте-Якутия/",
+  "description": "Безопасные услуги в Якутии. Найди мастера или заказ в радиусе 10 км",
+  "start_url": "/vremonte-yakutia/",
   "display": "standalone",
   "background_color": "#1a2980",
   "theme_color": "#1a2980",
   "orientation": "portrait",
+  "scope": "/vremonte-yakutia/",
+  "lang": "ru",
   "icons": [
     {
-      "src": "assets/icon-192.png",
+      "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "assets/icon-512.png",
+      "src": "icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "utilities", "social"],
+  "screenshots": [
+    {
+      "src": "screenshots/screenshot1.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ]
 }
